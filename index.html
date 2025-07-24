@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Green-Light: BGS Greenpower Fundraising Strategy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: "Calm Harmony" - A palette of warm neutrals (bg-stone-50, bg-stone-100), a deep teal for primary actions and headers (#0d9488), a softer teal for accents (#2dd4bf), and a dark gray for text (#374151) to create a professional, calm, and focused feel. -->
+    <!-- Application Structure Plan: A single-page dashboard layout is chosen over a linear report structure to empower users (donors, stakeholders) to explore information based on their interests. The structure includes: 1. A sticky top navigation for quick access to key sections. 2. A "Hero" section with a clear value proposition and key metrics to grab attention. 3. An interactive "Strategy Pillars" section using tabs to present the four core fundraising strategies without overwhelming the user. 4. An interactive "Financials" section with charts for budget and revenue projections, allowing for dynamic exploration of the data. 5. A "Partnership Tiers" section laid out as clear, comparable cards. 6. A "Roadmap" section visualized as an interactive timeline. This non-linear, task-oriented design respects the user's time and allows for a self-guided journey through the team's strategic plan, making the complex report digestible and engaging. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Annual Budget Breakdown -> Goal: Inform, Compare -> Viz/Method: Doughnut Chart (Chart.js) -> Interaction: Hover for details -> Justification: Shows the proportion of costs clearly and interactively.
+        - Report Info: Revenue Projections -> Goal: Show Growth/Change -> Viz/Method: Bar Chart (Chart.js) -> Interaction: Toggle between scenarios (Realistic, Optimistic, Pessimistic) -> Justification: Allows users to compare potential outcomes and understand the model's resilience.
+        - Report Info: Fundraising Pillars -> Goal: Organize, Inform -> Viz/Method: Tabbed Interface (HTML/JS) -> Interaction: Click tabs to reveal detailed content -> Justification: Prevents information overload by chunking the four complex strategies into manageable sections.
+        - Report Info: Partnership Tiers -> Goal: Compare, Inform -> Viz/Method: Styled Cards (HTML/Tailwind) -> Interaction: Static, clear layout -> Justification: Presents sponsorship options as clear, comparable packages for potential donors.
+        - Report Info: Implementation Roadmap -> Goal: Show Process/Timeline -> Viz/Method: Interactive Timeline (HTML/JS) -> Interaction: Click quarters to show/hide tasks -> Justification: Makes the 18-month plan digestible and shows a clear path to execution.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .bg-primary { background-color: #0d9488; }
+        .text-primary { color: #0d9488; }
+        .border-primary { border-color: #0d9488; }
+        .bg-accent { background-color: #2dd4bf; }
+        .text-accent { color: #2dd4bf; }
+        .chart-container { position: relative; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .nav-link { transition: color 0.3s, border-color 0.3s; }
+        .nav-link.active { color: #0d9488; border-bottom-width: 2px; }
+        .tab.active { background-color: #0d9488; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .roadmap-item.active .roadmap-content { max-height: 500px; opacity: 1; padding-top: 1rem; padding-bottom: 1rem; }
+        .roadmap-content { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease-in-out; }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-800">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-primary">
+                <span class="hidden sm:inline">BGS Greenpower</span>
+                <span class="sm:hidden">BGS GP</span>
+            </h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#overview" class="nav-link text-slate-600 hover:text-primary border-b-2 border-transparent">Overview</a>
+                <a href="#strategy" class="nav-link text-slate-600 hover:text-primary border-b-2 border-transparent">Strategy</a>
+                <a href="#financials" class="nav-link text-slate-600 hover:text-primary border-b-2 border-transparent">Financials</a>
+                <a href="#partnership" class="nav-link text-slate-600 hover:text-primary border-b-2 border-transparent">Partnership</a>
+                <a href="#roadmap" class="nav-link text-slate-600 hover:text-primary border-b-2 border-transparent">Roadmap</a>
+            </div>
+            <a href="#contact" class="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity">Become a Partner</a>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+
+        <!-- Section 1: Overview -->
+        <section id="overview" class="text-center mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="text-3xl md:text-5xl font-bold text-slate-900 mb-4">Project Green-Light</h2>
+            <p class="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-8">A strategic fundraising roadmap to power the next generation of engineers at Boston Grammar School through the Greenpower challenge.</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto text-center">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <p class="text-4xl font-bold text-primary mb-2">173k+</p>
+                    <p class="text-slate-600">UK STEM Worker Shortfall</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <p class="text-4xl font-bold text-primary mb-2">£5.8k</p>
+                    <p class="text-slate-600">Annual Funding Target</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <p class="text-4xl font-bold text-primary mb-2">10k+</p>
+                    <p class="text-slate-600">Students Engaged Annually</p>
+                </div>
+            </div>
+            <div class="mt-10 bg-stone-100 p-6 rounded-xl max-w-4xl mx-auto">
+                 <h3 class="text-xl font-bold text-slate-800 mb-3">The Case for Support</h3>
+                 <p class="text-slate-700 text-left md:text-center">Supporting the BGS Greenpower team is a high-impact investment. It directly addresses the national STEM skills crisis, provides students with unparalleled hands-on experience in engineering and project management, and offers a powerful Corporate Social Responsibility (CSR) opportunity for partners. By contributing, you are not just funding a school club; you are investing in the future innovators and economic drivers of our community and nation.</p>
+            </div>
+        </section>
+
+        <!-- Section 2: Strategy Pillars -->
+        <section id="strategy" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900">A Multi-Pillar Fundraising Strategy</h2>
+                <p class="text-lg text-slate-600 max-w-3xl mx-auto mt-4">To build a resilient and sustainable financial future, we propose a diversified strategy moving beyond traditional models. This interactive section details our four core pillars. Click each tab to explore the specific initiatives we plan to implement.</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-4 md:p-8 max-w-5xl mx-auto">
+                <div id="tabs" class="flex flex-wrap justify-center border-b border-slate-200 mb-6 -mt-4 md:-mt-8 -mx-4 md:-mx-8 p-2">
+                    <button data-tab="pillar1" class="tab active flex-grow text-center font-semibold p-3 md:p-4 rounded-tl-lg">Community & Crowd</button>
+                    <button data-tab="pillar2" class="tab flex-grow text-center font-semibold p-3 md:p-4">Grants & Trusts</button>
+                    <button data-tab="pillar3" class="tab flex-grow text-center font-semibold p-3 md:p-4">Products & Services</button>
+                    <button data-tab="pillar4" class="tab flex-grow text-center font-semibold p-3 md:p-4 rounded-tr-lg">Strategic Partnerships</button>
+                </div>
+
+                <div id="pillar1" class="tab-content active">
+                    <h3 class="text-2xl font-bold text-primary mb-4">Pillar 1: Community & Crowd-Based Initiatives</h3>
+                    <p class="text-slate-600 mb-6">This pillar focuses on harnessing the collective power of our local community, parents, and alumni through accessible digital platforms. We aim to build grassroots support and create a broad base of engaged, small-dollar donors.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-stone-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-800">"Adopt-a-Part" Campaign</h4>
+                            <p class="text-slate-600">An ongoing micro-donation campaign where supporters can "adopt" specific car components (e.g., a wheel for £50, a battery for £75), visually tracking our collective progress towards a fully funded car.</p>
+                        </div>
+                        <div class="bg-stone-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-800">Local Crowdfunding</h4>
+                            <p class="text-slate-600">A high-energy, time-bound campaign on a platform like Rocketfund to generate seed funding for a major project, such as a new carbon-fibre chassis, while significantly boosting the team's public profile.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pillar2" class="tab-content">
+                    <h3 class="text-2xl font-bold text-primary mb-4">Pillar 2: Grant Funding & Charitable Trusts</h3>
+                    <p class="text-slate-600 mb-6">This pillar involves a professional, research-led approach to securing larger, strategic grants from foundations whose missions align with our objectives in STEM, youth development, and education.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-stone-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-800">Targeted Grant Prospecting</h4>
+                            <p class="text-slate-600">We will focus on high-potential funders, especially Lincolnshire-based trusts like the Jon Egging Trust (JET), which has a specific mandate to support local youth STEM programmes.</p>
+                        </div>
+                        <div class="bg-stone-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-800">Compelling Applications</h4>
+                            <p class="text-slate-600">Our applications will be evidence-based, presenting a clear plan, a detailed budget, and measurable outcomes, such as increasing the number of students pursuing STEM A-levels.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pillar3" class="tab-content">
+                    <h3 class="text-2xl font-bold text-primary mb-4">Pillar 3: Product & Service-Based Revenue</h3>
+                    <p class="text-slate-600 mb-6">This pillar transforms the team from a cost centre into a revenue-generating entity by leveraging our unique assets: the car, student expertise, and the excitement of motorsport.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-stone-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-800">"Junior Engineer" Workshops</h4>
+                            <p class="text-slate-600">We will offer paid workshops to local primary schools and youth groups, providing a unique, peer-led introduction to engineering principles and generating valuable income.</p>
+                        </div>
+                        <div class="bg-stone-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-800">"Greenpower Experience Days"</h4>
+                            <p class="text-slate-600">Premium, paid experiences offered to individuals or corporate groups, providing a behind-the-scenes look at the project. These can be high-value items in charity auctions.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="pillar4" class="tab-content">
+                    <h3 class="text-2xl font-bold text-primary mb-4">Pillar 4: Strategic Partnerships Beyond Finance</h3>
+                    <p class="text-slate-600 mb-6">This pillar focuses on securing vital resources through non-financial contributions, building an ecosystem of support that reduces costs and enhances our team's capabilities.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-stone-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-800">In-Kind Donations</h4>
+                            <p class="text-slate-600">Systematically approaching local engineering firms for donations of materials, tools, or access to specialised machinery, reducing our direct operational costs.</p>
+                        </div>
+                        <div class="bg-stone-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-800">University & Skills-Based Collaboration</h4>
+                            <p class="text-slate-600">Partnering with the University of Lincoln for access to facilities and academic mentorship, and approaching local firms for pro-bono expertise in areas like marketing or accounting.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Financials -->
+        <section id="financials" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Financial Plan & Projections</h2>
+                <p class="text-lg text-slate-600 max-w-3xl mx-auto mt-4">A credible strategy requires a transparent financial plan. Here we present our estimated annual budget and projected revenue from our multi-pillar strategy. Use the buttons to explore different projection scenarios.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-start">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4 text-center">Annual Operating Budget: £5,831</h3>
+                    <div class="chart-container">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4 text-center">3-Year Revenue Projections</h3>
+                     <div class="flex justify-center mb-4 space-x-2">
+                        <button id="btnRealistic" class="px-4 py-1 text-sm font-semibold rounded-md bg-primary text-white">Realistic</button>
+                        <button id="btnOptimistic" class="px-4 py-1 text-sm font-semibold rounded-md bg-slate-200 text-slate-700">Optimistic</button>
+                        <button id="btnPessimistic" class="px-4 py-1 text-sm font-semibold rounded-md bg-slate-200 text-slate-700">Pessimistic</button>
+                    </div>
+                    <div class="chart-container" style="max-width: 600px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Partnership Tiers -->
+        <section id="partnership" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Become a Partner</h2>
+                <p class="text-lg text-slate-600 max-w-3xl mx-auto mt-4">We offer a tiered recognition program to ensure our partners receive the visibility and appreciation they deserve. Your support, at any level, is a direct investment in the future of STEM.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Tier Cards -->
+                <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col">
+                    <h3 class="text-2xl font-bold text-primary">Bronze Partner</h3>
+                    <p class="text-3xl font-bold text-slate-800 mt-2 mb-4">£250+</p>
+                    <ul class="space-y-2 text-slate-600 flex-grow">
+                        <li>✓ Name listed on team website</li>
+                        <li>✓ Inclusion in annual impact report</li>
+                        <li>✓ Dedicated 'thank you' on social media</li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col border-2 border-primary ring-4 ring-teal-100">
+                    <span class="text-center font-bold bg-primary text-white py-1 px-4 rounded-full -mt-10 mx-auto">Most Popular</span>
+                    <h3 class="text-2xl font-bold text-primary mt-4">Silver Partner</h3>
+                    <p class="text-3xl font-bold text-slate-800 mt-2 mb-4">£1,000+</p>
+                    <ul class="space-y-2 text-slate-600 flex-grow">
+                        <li>✓ All 'Bronze' benefits</li>
+                        <li>✓ Small company logo on race car</li>
+                        <li>✓ Small logo on pit wall banner</li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col">
+                    <h3 class="text-2xl font-bold text-primary">Gold Partner</h3>
+                    <p class="text-3xl font-bold text-slate-800 mt-2 mb-4">£2,500+</p>
+                    <ul class="space-y-2 text-slate-600 flex-grow">
+                        <li>✓ All 'Silver' benefits</li>
+                        <li>✓ Medium logo on race car</li>
+                        <li>✓ Logo on team website homepage</li>
+                        <li>✓ Invitation to a private "Experience Day"</li>
+                    </ul>
+                </div>
+            </div>
+             <p class="text-center mt-8 text-slate-600">Lead Partner opportunities (£5,000+) are also available, offering maximum brand exposure. Please get in touch to discuss a bespoke package.</p>
+        </section>
+
+        <!-- Section 5: Roadmap -->
+        <section id="roadmap" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900">18-Month Implementation Roadmap</h2>
+                <p class="text-lg text-slate-600 max-w-3xl mx-auto mt-4">Strategy is nothing without execution. This interactive timeline outlines our key actions and milestones for the first 18 months. Click on each quarter to see the detailed tasks.</p>
+            </div>
+            <div class="max-w-3xl mx-auto">
+                <div id="roadmap-container">
+                    <!-- Roadmap items will be injected here by JS -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 6: Contact / CTA -->
+        <section id="contact" class="bg-primary text-white rounded-xl p-8 md:p-12 text-center scroll-mt-20">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Power the Future?</h2>
+            <p class="text-lg text-teal-100 max-w-2xl mx-auto mb-8">Join us in this exciting project. Your partnership can make a tangible difference to our students and the wider community. Let's build something amazing together.</p>
+            <a href="mailto:developmentoffice@bostongrammarschool.co.uk?subject=BGS%20Greenpower%20Partnership" class="bg-white text-primary font-bold py-3 px-8 rounded-lg text-lg hover:bg-teal-100 transition-colors">Contact Us to Partner</a>
+        </section>
+
+    </main>
+    
+    <footer class="text-center py-6 text-slate-500">
+        <p>&copy; 2025 Boston Grammar School Greenpower Racing Team. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Data
+            const budgetData = {
+                labels: ['Travel & Logistics', 'Capital Costs', 'Consumables & Spares', 'Race & Entry Fees', 'Workshop & Equipment', 'Marketing & Other'],
+                datasets: [{
+                    data: [1800, 1000, 1006, 845, 400, 250],
+                    backgroundColor: ['#0d9488', '#14b8a6', '#2dd4bf', '#5eead4', '#99f6e4', '#ccfbf1'],
+                    hoverOffset: 4
+                }]
+            };
+
+            const revenueData = {
+                labels: ['Year 1', 'Year 2', 'Year 3'],
+                scenarios: {
+                    realistic: [5500, 6500, 8500],
+                    optimistic: [7000, 9000, 12000],
+                    pessimistic: [3500, 4500, 5500]
+                }
+            };
+            
+            const roadmapData = [
+                { quarter: 'Q1 (Months 1-3)', tasks: ['Establish Fundraising Committee', 'Develop Core Assets (Case for Support, Promo Video)', 'Launch "Adopt-a-Part" Campaign'] },
+                { quarter: 'Q2 (Months 4-6)', tasks: ['Submit First Grant Application (e.g., Jon Egging Trust)', 'Secure First Silver Partner (£1,000)', 'Plan First "Junior Engineer" Workshop'] },
+                { quarter: 'Q3 (Months 7-9)', tasks: ['Host First "Junior Engineer" Workshop', 'Implement Donor Stewardship & "Thank You" Protocol', 'Conduct Mid-Year Progress Review'] },
+                { quarter: 'Q4 (Months 10-12)', tasks: ['Launch Major Crowdfunding Campaign (£1,500+ goal)', 'Secure Second Corporate Partner', 'Produce & Distribute Annual Impact Report'] },
+                { quarter: 'Q5 (Months 13-15)', tasks: ['Submit Two New Grant Applications', 'Develop "Experience Day" Package for Charity Auctions'] },
+                { quarter: 'Q6 (Months 16-18)', tasks: ['Expand Workshop Offerings (2 more events)', 'Formally Establish Operational Reserve Fund'] },
+            ];
+
+            // Chart.js Initialization
+            const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+            const budgetChart = new Chart(budgetCtx, {
+                type: 'doughnut',
+                data: budgetData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 12 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed !== null) { label += new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(context.parsed); }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: revenueData.labels,
+                    datasets: [{
+                        label: 'Projected Revenue (Realistic)',
+                        data: revenueData.scenarios.realistic,
+                        backgroundColor: '#0d9488',
+                        borderColor: '#0f766e',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: value => `£${value/1000}k` } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0 }).format(context.parsed.y);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Revenue Chart Interaction
+            const updateRevenueChart = (scenario) => {
+                revenueChart.data.datasets[0].data = revenueData.scenarios[scenario];
+                revenueChart.data.datasets[0].label = `Projected Revenue (${scenario.charAt(0).toUpperCase() + scenario.slice(1)})`;
+                revenueChart.update();
+                
+                document.getElementById('btnRealistic').classList.toggle('bg-primary', scenario === 'realistic').toggle('text-white', scenario === 'realistic').toggle('bg-slate-200', scenario !== 'realistic');
+                document.getElementById('btnOptimistic').classList.toggle('bg-primary', scenario === 'optimistic').toggle('text-white', scenario === 'optimistic').toggle('bg-slate-200', scenario !== 'optimistic');
+                document.getElementById('btnPessimistic').classList.toggle('bg-primary', scenario === 'pessimistic').toggle('text-white', scenario === 'pessimistic').toggle('bg-slate-200', scenario !== 'pessimistic');
+            };
+
+            document.getElementById('btnRealistic').addEventListener('click', () => updateRevenueChart('realistic'));
+            document.getElementById('btnOptimistic').addEventListener('click', () => updateRevenueChart('optimistic'));
+            document.getElementById('btnPessimistic').addEventListener('click', () => updateRevenueChart('pessimistic'));
+
+            // Tabbed Interface
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        content.classList.toggle('active', content.id === target);
+                    });
+                });
+            });
+            
+            // Roadmap Generation & Interaction
+            const roadmapContainer = document.getElementById('roadmap-container');
+            roadmapData.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'roadmap-item border-l-4 border-primary pl-6 pb-8 relative';
+                
+                let contentHTML = `<div class="absolute -left-[11px] top-1 w-5 h-5 bg-primary rounded-full border-4 border-white"></div>
+                    <h4 class="text-xl font-bold text-slate-800 cursor-pointer">${item.quarter}</h4>
+                    <div class="roadmap-content">
+                        <ul class="list-disc list-inside text-slate-600 mt-2 space-y-1">`;
+                
+                item.tasks.forEach(task => {
+                    contentHTML += `<li>${task}</li>`;
+                });
+                
+                contentHTML += `</ul></div>`;
+                itemEl.innerHTML = contentHTML;
+                
+                if (index === 0) itemEl.classList.add('active'); // Open first item by default
+                
+                itemEl.querySelector('h4').addEventListener('click', () => {
+                    itemEl.classList.toggle('active');
+                });
+                
+                roadmapContainer.appendChild(itemEl);
+            });
+
+
+            // Smooth Scrolling & Active Nav Link
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+            
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
