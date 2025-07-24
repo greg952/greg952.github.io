@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rural Revival: An Interactive Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Subtle Greens -->
+    <!-- Application Structure Plan: The SPA is designed as a top-down narrative dashboard. It starts with the high-level vision (The 'Why'), moves to the core problem (The 'What' - Digital Divide), explores the target user (The 'Who'), presents the solution (The 'How' - Rural Connect), and finally outlines the strategy. This logical flow guides the user from the broad opportunity down to the specific business plan, making a complex report digestible. Navigation is handled by a sticky top bar that allows users to jump to sections, facilitating both linear reading and non-linear exploration. Interactive charts and filterable data points are used to make dense information like connectivity stats and demographic data engaging and easy to compare. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Full-Fibre Availability by County/District -> Goal: Compare regional disparities -> Viz: Interactive Bar Chart (Chart.js) -> Interaction: User can select a county from a dropdown to dynamically update the chart, showing data for its districts. Justification: This makes the "postcode lottery" concept immediately visible and personal.
+        - Report Info: Age Profile of Rural East of England -> Goal: Inform about the aging demographic -> Viz: Donut Chart (Chart.js) -> Interaction: Hovering over segments reveals exact percentages. Justification: A donut chart is a simple, effective way to show proportional data at a glance.
+        - Report Info: Digital Skills Gap by Age -> Goal: Highlight the core problem -> Viz: Horizontal Bar Chart (Chart.js) -> Interaction: Tooltips on hover provide specific data points. Justification: Clearly shows the strong correlation between age and lack of digital skills.
+        - Report Info: Rural Connect Business Model -> Goal: Organize complex information -> Viz: Structured HTML/CSS Grid -> Interaction: Key sections are visually distinct cards. Justification: Breaks down the business model canvas into readable, scannable components.
+        - Report Info: Go-to-Market Strategy -> Goal: Show a process over time -> Viz: Styled HTML/CSS Timeline -> Interaction: Hover effects on phases. Justification: A timeline is the most intuitive way to represent a phased rollout plan.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8; /* Warm Neutral Background */
+            color: #4B5563; /* Dark Gray Text */
+        }
+        .bg-primary { background-color: #FDFBF8; }
+        .bg-secondary { background-color: #F1F5F9; }
+        .text-primary { color: #1F2937; }
+        .text-secondary { color: #4B5563; }
+        .accent-color { color: #16A34A; } /* Subtle Green */
+        .accent-bg { background-color: #16A34A; }
+        .accent-border { border-color: #16A34A; }
+        .nav-link {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.3s, color 0.3s;
+            cursor: pointer;
+        }
+        .nav-link.active, .nav-link:hover {
+            background-color: #D1FAE5; /* Light Green */
+            color: #065F46; /* Dark Green */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .section {
+            scroll-margin-top: 80px;
+        }
+    </style>
+</head>
+<body class="bg-primary">
+
+    <header id="header" class="bg-primary/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-primary">Rural Revival</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a onclick="scrollToSection('vision')" class="nav-link active">Vision</a>
+                        <a onclick="scrollToSection('problem')" class="nav-link">The Digital Divide</a>
+                        <a onclick="scrollToSection('demographics')" class="nav-link">The Rural Resident</a>
+                        <a onclick="scrollToSection('solution')" class="nav-link">The Solution</a>
+                        <a onclick="scrollToSection('strategy')" class="nav-link">Strategy</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <span class="sr-only">Open main menu</span>
+                        <div id="hamburger-icon">
+                            <div class="w-6 h-0.5 bg-gray-600 mb-1.5"></div>
+                            <div class="w-6 h-0.5 bg-gray-600 mb-1.5"></div>
+                            <div class="w-6 h-0.5 bg-gray-600"></div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a onclick="scrollToSection('vision')" class="nav-link block">Vision</a>
+                <a onclick="scrollToSection('problem')" class="nav-link block">The Digital Divide</a>
+                <a onclick="scrollToSection('demographics')" class="nav-link block">The Rural Resident</a>
+                <a onclick="scrollToSection('solution')" class="nav-link block">The Solution</a>
+                <a onclick="scrollToSection('strategy')" class="nav-link block">Strategy</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <section id="vision" class="section text-center mb-24">
+            <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">Bridging the UK's Rural Digital Divide</h1>
+            <p class="max-w-3xl mx-auto text-lg text-secondary mb-8">
+                This interactive report analyzes the urgent need for technology solutions in the East of England. It identifies a critical service gap for the aging rural population and proposes an innovative business, <span class="font-semibold accent-color">Rural Connect</span>, to restore access to essential services and enhance quality of life.
+            </p>
+            <div class="flex justify-center">
+                <a onclick="scrollToSection('problem')" class="px-8 py-3 bg-accent-bg text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-300 cursor-pointer">Explore the Opportunity</a>
+            </div>
+        </section>
+
+        <section id="problem" class="section mb-24">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">The Problem: A Connectivity Postcode Lottery</h2>
+            <p class="text-center text-lg text-secondary max-w-3xl mx-auto mb-12">The East of England suffers from a stark digital divide. While urban centers thrive, vast rural areas are left with inadequate broadband and mobile coverage. This isn't just an inconvenience; it's a barrier to economic activity and access to essential services like healthcare and banking. This section visualizes the extent of this "postcode lottery."</p>
+            
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-primary mb-4 md:mb-0">Full-Fibre Broadband Availability</h3>
+                    <div class="flex items-center space-x-3">
+                        <label for="county-select" class="text-sm font-medium text-secondary">Select a County:</label>
+                        <select id="county-select" class="block w-full md:w-auto pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md">
+                            <option value="Norfolk">Norfolk</option>
+                            <option value="Suffolk">Suffolk</option>
+                            <option value="Cambridgeshire">Cambridgeshire</option>
+                            <option value="Essex">Essex</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="connectivityChart"></canvas>
+                </div>
+                <p class="text-xs text-gray-500 mt-4 text-center">Data Source: Ofcom "Connected Nations" Report 2023. Chart shows full-fibre availability by district.</p>
+            </div>
+        </section>
+
+        <section id="demographics" class="section mb-24 bg-secondary py-16 rounded-xl">
+             <h2 class="text-3xl font-bold text-center text-primary mb-4">The User: Understanding the Rural Resident</h2>
+             <p class="text-center text-lg text-secondary max-w-3xl mx-auto mb-12">To create a successful solution, we must understand the target user. Rural communities in the East of England have a distinct demographic profile, characterized by an older population, diverse income levels, and a significant digital skills gap. These factors are critical in designing a product that is not just useful, but usable and trusted.</p>
+
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-primary mb-4 text-center">Age Profile: An Aging Population</h3>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="ageProfileChart"></canvas>
+                    </div>
+                    <p class="text-center mt-4 text-secondary">Lincolnshire's population aged 65+ is projected to reach 30% by 2041, significantly above the national average.</p>
+                </div>
+
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-primary mb-4 text-center">The Digital Skills Divide</h3>
+                     <div class="chart-container" style="height: 300px;">
+                        <canvas id="skillsGapChart"></canvas>
+                    </div>
+                    <p class="text-center mt-4 text-secondary">Nearly half of people over 65 in the UK lack the foundational skills to use the internet safely and effectively.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="solution" class="section mb-24">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">The Solution: Introducing "Rural Connect"</h2>
+            <p class="text-center text-lg text-secondary max-w-3xl mx-auto mb-12">The market failure is clear: existing solutions are digital-only tools, not end-to-end services. "Rural Connect" is a proposed subscription service designed to fill this gap. It's not about selling technology; it's about delivering a trusted, comprehensive service that restores access, builds confidence, and fosters independence.</p>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="stat-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                             <span class="text-3xl">📱</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg text-primary">Curated Hardware</h4>
+                    <p class="text-secondary text-sm">A simplified, pre-configured tablet with a large-icon interface for easy navigation to essential services like 'My GP' or 'Call Family'.</p>
+                </div>
+                <div class="stat-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                             <span class="text-3xl">📡</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg text-primary">Guaranteed Connectivity</h4>
+                    <p class="text-secondary text-sm">A managed connection (FWA or 4G/5G) included in the package, ensuring the service "just works" even in digital not-spots.</p>
+                </div>
+                <div class="stat-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                             <span class="text-3xl">🤝</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg text-primary">In-Person Support</h4>
+                    <p class="text-secondary text-sm">A local "Rural Connect Champion" provides home installation, one-to-one training, and ongoing, patient support.</p>
+                </div>
+                <div class="stat-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                             <span class="text-3xl">🏘️</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg text-primary">Community Hub</h4>
+                    <p class="text-secondary text-sm">Curated access to local news, events, and secure video chat to combat social isolation and strengthen community ties.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategy" class="section bg-secondary py-16 rounded-xl">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">Go-to-Market Strategy</h4>
+            <p class="text-center text-lg text-secondary max-w-3xl mx-auto mb-12">A phased, geographically-focused rollout is essential to build operational excellence, manage costs, and establish a strong, trusted reputation. The strategy progresses from a targeted pilot to broad regional scale through strategic partnerships.</p>
+            
+            <div class="relative">
+                <div class="border-l-4 border-green-200 absolute h-full top-0 left-1/2 -ml-0.5 md:left-1/2"></div>
+                <div class="space-y-12">
+                    <div class="relative">
+                        <div class="md:flex items-center md:justify-end">
+                            <div class="md:w-1/2 md:pr-8">
+                                <div class="bg-white p-6 rounded-lg shadow-lg">
+                                    <h4 class="text-xl font-bold text-primary">Phase 1: Pilot & Refine</h4>
+                                    <p class="text-sm text-secondary mt-2">Months 1-6. Launch in a single high-need district (e.g., North Norfolk). Onboard the first 50-100 users, refine the training model, and gather testimonials through partnerships with local charities and GPs.</p>
+                                </div>
+                            </div>
+                            <div class="absolute left-1/2 -ml-4 top-1/2 -mt-4 w-8 h-8 rounded-full bg-accent-bg border-4 border-white flex items-center justify-center text-white font-bold">1</div>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="md:flex items-center">
+                            <div class="md:w-1/2 md:pl-8 md:ml-auto">
+                                <div class="bg-white p-6 rounded-lg shadow-lg">
+                                    <h4 class="text-xl font-bold text-primary">Phase 2: Geographic Expansion</h4>
+                                    <p class="text-sm text-secondary mt-2">Months 7-24. Systematically expand to adjacent districts in Norfolk and Suffolk. Focus on hyper-local marketing (parish magazines, village fetes) to build a powerful word-of-mouth reputation.</p>
+                                </div>
+                            </div>
+                            <div class="absolute left-1/2 -ml-4 top-1/2 -mt-4 w-8 h-8 rounded-full bg-accent-bg border-4 border-white flex items-center justify-center text-white font-bold">2</div>
+                        </div>
+                    </div>
+                     <div class="relative">
+                        <div class="md:flex items-center md:justify-end">
+                            <div class="md:w-1/2 md:pr-8">
+                                <div class="bg-white p-6 rounded-lg shadow-lg">
+                                    <h4 class="text-xl font-bold text-primary">Phase 3: B2G Engagement & Scale</h4>
+                                    <p class="text-sm text-secondary mt-2">Months 25+. With proven social impact data, pursue large-scale commissioning contracts with County Councils and NHS bodies. This provides a pathway to stable, long-term revenue and regional scale.</p>
+                                </div>
+                            </div>
+                            <div class="absolute left-1/2 -ml-4 top-1/2 -mt-4 w-8 h-8 rounded-full bg-accent-bg border-4 border-white flex items-center justify-center text-white font-bold">3</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-24">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2024 Rural Revival Interactive Report. All data is illustrative and based on the source research document.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const connectivityData = {
+                'Norfolk': { labels: ['North Norfolk', 'South Norfolk', 'Norwich', 'Great Yarmouth'], data: [15, 41, 78, 65] },
+                'Suffolk': { labels: ['Mid Suffolk', 'East Suffolk', 'West Suffolk', 'Ipswich'], data: [41, 42, 54, 80] },
+                'Cambridgeshire': { labels: ['South Cambs', 'East Cambs', 'Huntingdonshire', 'Cambridge'], data: [42, 64, 68, 75] },
+                'Essex': { labels: ['Colchester', 'Braintree', 'Maldon', 'Uttlesford'], data: [28, 60, 71, 55] }
+            };
+
+            const ageProfileData = {
+                labels: ['Under 18', '18-64', '65+'],
+                datasets: [{
+                    data: [19, 57.6, 23.4],
+                    backgroundColor: ['#A7F3D0', '#34D399', '#065F46'],
+                    hoverBackgroundColor: ['#6EE7B7', '#10B981', '#047857']
+                }]
+            };
+            
+            const skillsGapData = {
+                labels: ['Age 18-24', 'Age 25-49', 'Age 50-64', 'Age 65+'],
+                datasets: [{
+                    label: '% Lacking Foundational Digital Skills',
+                    data: [5, 8, 15, 46],
+                    backgroundColor: '#34D399',
+                    borderColor: '#10B981',
+                    borderWidth: 1
+                }]
+            };
+
+            let connectivityChart;
+            const connectivityCtx = document.getElementById('connectivityChart').getContext('2d');
+            const ageProfileCtx = document.getElementById('ageProfileChart').getContext('2d');
+            const skillsGapCtx = document.getElementById('skillsGapChart').getContext('2d');
+
+            function createConnectivityChart(county) {
+                if (connectivityChart) {
+                    connectivityChart.destroy();
+                }
+                connectivityChart = new Chart(connectivityCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: connectivityData[county].labels,
+                        datasets: [{
+                            label: 'Full-Fibre Availability (%)',
+                            data: connectivityData[county].data,
+                            backgroundColor: '#A7F3D0',
+                            borderColor: '#10B981',
+                            borderWidth: 1,
+                            borderRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: '#E5E7EB'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Availability: ${context.raw}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            new Chart(ageProfileCtx, {
+                type: 'doughnut',
+                data: ageProfileData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            new Chart(skillsGapCtx, {
+                type: 'bar',
+                data: skillsGapData,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 50,
+                            grid: {
+                                color: '#E5E7EB'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + "%"
+                                }
+                            }
+                        },
+                         y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const countySelect = document.getElementById('county-select');
+            countySelect.addEventListener('change', (event) => {
+                createConnectivityChart(event.target.value);
+            });
+
+            createConnectivityChart('Norfolk');
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        });
+
+        function scrollToSection(id) {
+            const section = document.getElementById(id);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('onclick').includes(id)) {
+                        link.classList.add('active');
+                    }
+                });
+
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            }
+        }
+
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            let currentSection = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('onclick').includes(currentSection)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
